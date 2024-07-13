@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <style>
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        display: inline-block;
+        margin: 10px;
+      }
+      img {
+        cursor: pointer;
+      }
+      .error {
+        color: red;
+      }
+      .loading {
+        font-style: italic;
+      }
+      input {
+        margin-right: 1rem;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta
+      property="og:title"
+      content="Searching California with Modal x Mongo x Clay"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://modal-labs-clay-hybrid-search.modal.run/static/og-image.jpg"
+    />
+    <meta
+      property="og:description"
+      content="Search satellite images of California based on vibes"
+    />
+  </head>
+  <body>
+    <h1>
+      Click images to search by
+      <a href="https://clay-foundation.github.io/model/index.html">Clay</a>
+      embedding similarity.
+    </h1>
+    <h2>
+      Powered by <a href="https://modal.com">Modal</a>,
+      <a href="https://mongodb.com">MongoDB</a>, and the
+      <a
+        href="https://www.esa.int/Applications/Observing_the_Earth/Copernicus/The_Sentinel_missions"
+        >European Space Agency</a
+      >.
+    </h2>
+    <div
+      x-data="{
+        since: '',
+        before: '',
+        lat: 37.8,
+        lon: -122.4,
+        searchResults: [],
+        loading: false,
+        errorMessage: '',
+
+        async postGeoSearch() {
+          if (isNaN(this.lat) || isNaN(this.lon)) {
+            this.errorMessage = 'Please enter valid latitude and longitude values.';
+            return;
+          }
+
+          this.loading = true;
+          this.errorMessage = '';
+
+          const queryParams = new URLSearchParams();
+
+          if (this.since) {
+            queryParams.append('since', this.since);
+          }
+          if (this.before) {
+            queryParams.append('before', this.before);
+          }
+
+          const response = await fetch(`https://modal-labs--clay-mongo-client-geo-search.modal.run?${queryParams.toString()}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ lat: parseFloat(this.lat), lon: parseFloat(this.lon) }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            this.searchResults = data.results;
+          } else {
+            this.errorMessage = `Error: ${response.statusText}`;
+          }
+          this.loading = false;
+        },
+
+        async onImageClick(item) {
+          this.loading = true;
+          this.lat = item.lat ? item.lat.toFixed(1) : this.lat;
+          this.lon = item.lon ? item.lon.toFixed(1) : this.lon;
+          this.errorMessage = '';
+
+          const queryParams = new URLSearchParams();
+
+          if (this.since) {
+            queryParams.append('since', this.since);
+          }
+          if (this.before) {
+            queryParams.append('before', this.before);
+          }
+
+          try {
+            const response = await fetch(`https://modal-labs--clay-mongo-client-vector-search.modal.run?${queryParams.toString()}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ vector: item.vector }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              this.searchResults = data.results;
+            } else {
+              const errorData = await response.json();
+              this.errorMessage = `Error: ${errorData.message}`;
+            }
+          } catch (error) {
+            this.errorMessage = `Error: ${error.message}`;
+          }
+          this.loading = false;
+        },
+
+        onImageError(event) {
+            event.target.closest('li').style.display = 'none'
+            event.target.closest('li').style.margin = 0
+          }
+      }"
+      x-init="postGeoSearch"
+    >
+      <form @submit.prevent="postGeoSearch">
+        <label for="latitude">Latitude:</label>
+        <input
+          id="latitude"
+          x-model="lat"
+          placeholder="latitude"
+          style="width: 5rem"
+        />
+
+        <label for="longitude">Longitude:</label>
+        <input
+          id="longitude"
+          x-model="lon"
+          placeholder="longitude"
+          style="width: 5rem"
+        />
+
+        <label for="since">Since:</label>
+        <input id="since" type="date" x-model="since" placeholder="since" />
+
+        <label for="before">Before:</label>
+        <input id="before" type="date" x-model="before" placeholder="before" />
+
+        <button type="submit">Geographic Search</button>
+      </form>
+
+      <div x-show="loading" class="loading">Searching...</div>
+      <div x-show="errorMessage" class="error" x-text="errorMessage"></div>
+
+      <ul x-show="!loading">
+        <template x-for="item in searchResults" :key="item.url">
+          <li>
+            <img
+              :src="item.url"
+              @click="onImageClick(item)"
+              @error="onImageError"
+            />
+          </li>
+        </template>
+      </ul>
+    </div>
+  </body>
+</html>

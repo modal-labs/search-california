@@ -1,0 +1,25 @@
+[
+    {
+        "$geoNear": {
+            "minDistance": 1000,
+            "near": {"type": "Point", "coordinates": [-122.4, 37.8]},
+            "distanceField": "distance",
+            "query": {"properties.eo:cloud_cover": {"$lt": 0.3}}
+        }
+    },
+    {"$limit": 100},
+    {
+        "$project": {
+            "id": 1,
+            "bbox": 1,
+            "links": {
+                "$filter": {
+                    "input": "$links",
+                    "as": "link",
+                    "cond": {"$eq": ["$$link.rel", "thumbnail"]}
+                }
+            },
+            "distance": 1
+        }
+    }
+]
