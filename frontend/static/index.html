@@ -30,7 +30,7 @@
     <meta charset="UTF-8" />
     <meta
       property="og:title"
-      content="Searching California with Modal x Mongo x Clay"
+      content="Searching California with Modal x MongoDB x Clay"
     />
     <meta property="og:type" content="website" />
     <meta
@@ -60,8 +60,8 @@
       x-data="{
         since: '',
         before: '',
-        lat: 37.8,
-        lon: -122.4,
+        lat: 37.82,
+        lon: -122.29,
         searchResults: [],
         loading: false,
         errorMessage: '',
@@ -103,8 +103,8 @@
 
         async onImageClick(item) {
           this.loading = true;
-          this.lat = item.lat ? item.lat.toFixed(1) : this.lat;
-          this.lon = item.lon ? item.lon.toFixed(1) : this.lon;
+          this.lat = item.lat ? item.lat.toFixed(2) : this.lat;
+          this.lon = item.lon ? item.lon.toFixed(2) : this.lon;
           this.errorMessage = '';
 
           const queryParams = new URLSearchParams();
