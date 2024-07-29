@@ -1,7 +1,9 @@
 import json
-from typing import Any
+from datetime import date
+from typing import Any, Optional
 
 import modal
+from pydantic import BaseModel
 
 from .common import CLIENT_APP
 
@@ -126,12 +128,6 @@ class MongoClient:
         results = self.client[db][collection].aggregate(pipeline)
         for result in results:
             yield json.loads(bson.json_util.dumps(result))
-
-
-from datetime import date
-from typing import Optional
-
-from pydantic import BaseModel
 
 
 class GeoSearchRequest(BaseModel):
