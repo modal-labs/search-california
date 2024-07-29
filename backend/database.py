@@ -60,7 +60,6 @@ class MongoClient:
 
     @modal.method()
     def add_stacs(self, stac_documents, collection="test-clay", db="modal-examples"):
-        # TODO: validation/typing
         filtered_documents = []
         for document in stac_documents:
             if self.client[db][collection].find_one({"id": document["id"]}):
