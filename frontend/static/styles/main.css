@@ -1,3 +1,32 @@
+:root {
+    --background-color: white;
+    --text-color: black;
+    --input-background: white;
+    --input-text: black;
+    --input-border: #ccc;
+    --highlight-color: #6ec453;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #1a1a1a;
+        --text-color: #ffffff;
+        --input-background: #333333;
+        --input-text: #ffffff;
+        --input-border: #555555;
+        --highlight-color: #7fee64;
+    }
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+a {
+    color: var(--highlight-color)
+}
+
 ul {
     list-style-type: none;
     padding: 0;
@@ -8,18 +37,42 @@ li {
     margin: 10px;
 }
 
-img {
+.imgResult {
     cursor: pointer;
+    border: 2px solid transparent;
+    box-sizing: border-box;
 }
 
 .error {
-    color: red;
+    color: #ff6b6b;
 }
 
 .loading {
     font-style: italic;
 }
 
-input {
+input, button {
     margin-right: 1rem;
+    margin-top: 1rem;
+    background-color: var(--input-background);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+button {
+    cursor: pointer;
+}
+
+input:hover, button:hover, .imgResult:hover {
+    border-color: var(--highlight-color);
+}
+
+.imgResult:hover {
+    border-style: solid;
+}
+
+#map {
+    background-color: var(--background-color);
 }

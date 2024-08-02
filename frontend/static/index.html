@@ -20,6 +20,11 @@
       src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
       defer
     ></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   </head>
   <body>
     <h1>
@@ -27,6 +32,7 @@
       <a href="https://clay-foundation.github.io/model/index.html">Clay</a>
       embedding similarity.
     </h1>
+    <h1>Click the map to search by location.</h1>
     <h2>
       Powered by <a href="https://modal.com">Modal</a>,
       <a href="https://mongodb.com">MongoDB</a>, and the
@@ -36,23 +42,15 @@
       >.
     </h2>
     <div id="app">
-      <div x-data="searchForm" x-init="init">
+      <div
+        x-data="searchForm"
+        x-init="init"
+        @trigger-search.window="handleMapUpdate"
+      >
         <form @submit.prevent="postGeoSearch">
-          <label for="latitude">Latitude:</label>
-          <input
-            id="latitude"
-            x-model="$store.searchForm.lat"
-            placeholder="latitude"
-            style="width: 5rem"
-          />
-
-          <label for="longitude">Longitude:</label>
-          <input
-            id="longitude"
-            x-model="$store.searchForm.lon"
-            placeholder="longitude"
-            style="width: 5rem"
-          />
+          <div x-data="mapPicker" x-init="initMap">
+            <div id="map" style="height: 300px"></div>
+          </div>
 
           <label for="since">Since:</label>
           <input id="since" type="date" x-model="since" placeholder="since" />
@@ -65,7 +63,7 @@
             placeholder="before"
           />
 
-          <button type="submit">Geographic Search</button>
+          <button type="submit">Search</button>
         </form>
         <div x-show="loading" class="loading">Searching...</div>
         <div x-show="errorMessage" class="error" x-text="errorMessage"></div>
@@ -80,6 +78,7 @@
                 :src="item.url"
                 @click="onImageClick(item)"
                 @error="onImageError"
+                class="imgResult"
               />
             </li>
           </template>

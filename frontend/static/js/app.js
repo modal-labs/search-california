@@ -1,4 +1,47 @@
 document.addEventListener("alpine:init", () => {
+  Alpine.data("mapPicker", () => ({
+    map: null,
+    marker: null,
+
+    initMap() {
+      this.map = L.map("map").setView(
+        [Alpine.store("searchForm").lat, Alpine.store("searchForm").lon],
+        9
+      );
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(this.map);
+
+      this.marker = L.marker([
+        Alpine.store("searchForm").lat,
+        Alpine.store("searchForm").lon,
+      ]).addTo(this.map);
+
+      this.map.on("click", (e) => {
+        const { lat, lng } = e.latlng;
+        this.updateLatLon(lat, lng);
+      });
+
+      this.$watch("$store.searchForm.lat", (value) => this.updateMarker());
+      this.$watch("$store.searchForm.lon", (value) => this.updateMarker());
+    },
+
+    updateLatLon(lat, lon) {
+      Alpine.store("searchForm").lat = parseFloat(lat.toFixed(6));
+      Alpine.store("searchForm").lon = parseFloat(lon.toFixed(6));
+      this.$dispatch("trigger-search");
+    },
+
+    updateMarker() {
+      const newLatLng = [
+        Alpine.store("searchForm").lat,
+        Alpine.store("searchForm").lon,
+      ];
+      this.marker.setLatLng(newLatLng);
+      this.map.setView(newLatLng);
+    },
+  }));
+
   Alpine.data("searchForm", () => ({
     get lat() {
       return Alpine.store("searchForm").lat;
@@ -28,6 +71,10 @@ document.addEventListener("alpine:init", () => {
     errorMessage: "",
 
     init() {
+      this.postGeoSearch();
+    },
+
+    handleMapUpdate() {
       this.postGeoSearch();
     },
 
