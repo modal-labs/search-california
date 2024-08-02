@@ -14,6 +14,7 @@ image = (
         gpu="a10g",
     )
     .env({"PYTHONPATH": "/model/:/pkg/:/root/"})
+    .pip_install("pydantic >= 2")
 )
 
 COLLECTION = "sentinel-2-l2a"
