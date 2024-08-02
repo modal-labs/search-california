@@ -32,7 +32,14 @@ document.addEventListener("alpine:init", () => {
     },
 
     async postGeoSearch() {
-      if (isNaN(this.lat) || isNaN(this.lon)) {
+      if (
+        isNaN(this.lat) ||
+        isNaN(this.lon) ||
+        this.lat < -90 ||
+        this.lat > 90 ||
+        this.lon > 180 ||
+        this.lon < -180
+      ) {
         this.errorMessage = "Please enter valid latitude and longitude values.";
         return;
       }
