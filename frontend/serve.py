@@ -1,11 +1,11 @@
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-import modal
 
-import os
+import modal
 
 image = modal.Image.debian_slim(python_version="3.12").copy_local_dir(
     Path(__file__).parent / "static", remote_path="/root/static"
