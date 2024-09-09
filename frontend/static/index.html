@@ -5,7 +5,12 @@
       defer
       src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
     ></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+      #map {
+        height: 500px;
+        width: 100%;
+      }
       ul {
         list-style-type: none;
         padding: 0;
@@ -56,95 +61,7 @@
         >European Space Agency</a
       >.
     </h2>
-    <div
-      x-data="{
-        since: '',
-        before: '',
-        lat: 37.82,
-        lon: -122.29,
-        searchResults: [],
-        loading: false,
-        errorMessage: '',
-
-        async postGeoSearch() {
-          if (isNaN(this.lat) || isNaN(this.lon)) {
-            this.errorMessage = 'Please enter valid latitude and longitude values.';
-            return;
-          }
-
-          this.loading = true;
-          this.errorMessage = '';
-
-          const queryParams = new URLSearchParams();
-
-          if (this.since) {
-            queryParams.append('since', this.since);
-          }
-          if (this.before) {
-            queryParams.append('before', this.before);
-          }
-
-          const response = await fetch(`https://modal-labs--clay-mongo-client-geo-search.modal.run?${queryParams.toString()}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ lat: parseFloat(this.lat), lon: parseFloat(this.lon) }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            this.searchResults = data.results;
-          } else {
-            this.errorMessage = `Error: ${response.statusText}`;
-          }
-          this.loading = false;
-        },
-
-        async onImageClick(item) {
-          this.loading = true;
-          this.lat = item.lat ? item.lat.toFixed(2) : this.lat;
-          this.lon = item.lon ? item.lon.toFixed(2) : this.lon;
-          this.errorMessage = '';
-
-          const queryParams = new URLSearchParams();
-
-          if (this.since) {
-            queryParams.append('since', this.since);
-          }
-          if (this.before) {
-            queryParams.append('before', this.before);
-          }
-
-          try {
-            const response = await fetch(`https://modal-labs--clay-mongo-client-vector-search.modal.run?${queryParams.toString()}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ vector: item.vector }),
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              this.searchResults = data.results;
-            } else {
-              const errorData = await response.json();
-              this.errorMessage = `Error: ${errorData.message}`;
-            }
-          } catch (error) {
-            this.errorMessage = `Error: ${error.message}`;
-          }
-          this.loading = false;
-        },
-
-        onImageError(event) {
-            event.target.closest('li').style.display = 'none'
-            event.target.closest('li').style.margin = 0
-          }
-      }"
-      x-init="postGeoSearch"
-    >
+    <div x-data="geoJsonMap()" x-init="initMap()" style="height: 100vh">
       <form @submit.prevent="postGeoSearch">
         <label for="latitude">Latitude:</label>
         <input
@@ -171,6 +88,8 @@
         <button type="submit">Geographic Search</button>
       </form>
 
+      <div id="map" style="margin-top: 1rem"></div>
+
       <div x-show="loading" class="loading">Searching...</div>
       <div x-show="errorMessage" class="error" x-text="errorMessage"></div>
 
@@ -186,5 +105,146 @@
         </template>
       </ul>
     </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      function geoJsonMap() {
+        return {
+          since: "",
+          before: "",
+          lat: 37.82,
+          lon: -122.29,
+          searchResults: [],
+          loading: false,
+          errorMessage: "",
+          map: null,
+          geoJsonData: null,
+
+          async fetchGeoJson() {
+            try {
+              const response = await fetch(
+                "https://your-geojson-endpoint.example.com"
+              ); // Replace with your GeoJSON endpoint
+              if (!response.ok) throw new Error("Failed to fetch GeoJSON data");
+              this.geoJsonData = await response.json();
+              this.renderGeoJson();
+            } catch (error) {
+              this.errorMessage = `Error: ${error.message}`;
+            }
+          },
+
+          async postGeoSearch() {
+            if (isNaN(this.lat) || isNaN(this.lon)) {
+              this.errorMessage =
+                "Please enter valid latitude and longitude values.";
+              return;
+            }
+
+            this.loading = true;
+            this.errorMessage = "";
+
+            const queryParams = new URLSearchParams();
+
+            if (this.since) {
+              queryParams.append("since", this.since);
+            }
+            if (this.before) {
+              queryParams.append("before", this.before);
+            }
+
+            const response = await fetch(
+              `https://modal-labs--clay-mongo-client-geo-search.modal.run?${queryParams.toString()}`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  lat: parseFloat(this.lat),
+                  lon: parseFloat(this.lon),
+                }),
+              }
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              this.searchResults = data.results;
+            } else {
+              this.errorMessage = `Error: ${response.statusText}`;
+            }
+            this.loading = false;
+          },
+
+          async onImageClick(item) {
+            this.loading = true;
+            this.lat = item.lat ? item.lat.toFixed(2) : this.lat;
+            this.lon = item.lon ? item.lon.toFixed(2) : this.lon;
+            this.errorMessage = "";
+
+            const queryParams = new URLSearchParams();
+
+            if (this.since) {
+              queryParams.append("since", this.since);
+            }
+            if (this.before) {
+              queryParams.append("before", this.before);
+            }
+
+            try {
+              const response = await fetch(
+                `https://modal-labs--clay-mongo-client-vector-search.modal.run?${queryParams.toString()}`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ vector: item.vector }),
+                }
+              );
+
+              if (response.ok) {
+                const data = await response.json();
+                this.searchResults = data.results;
+              } else {
+                const errorData = await response.json();
+                this.errorMessage = `Error: ${errorData.message}`;
+              }
+            } catch (error) {
+              this.errorMessage = `Error: ${error.message}`;
+            }
+            this.loading = false;
+          },
+
+          onImageError(event) {
+            event.target.closest("li").style.display = "none";
+            event.target.closest("li").style.margin = 0;
+          },
+
+          async handleMapClick(e) {
+            this.lat = e.latlng.lat.toFixed(5);
+            this.lon = e.latlng.lng.toFixed(5);
+            this.map = L.map("map").setView([this.lat, this.lon], 8);
+            await this.postGeoSearch();
+          },
+
+          initMap() {
+            this.map = L.map("map").setView([this.lat, this.lon], 8);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              attribution:
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(this.map);
+
+            this.map.on("click", this.handleMapClick.bind(this));
+          },
+
+          renderGeoJson() {
+            if (this.geoJsonData && this.map) {
+              L.geoJSON(this.geoJsonData).addTo(this.map);
+            }
+          },
+        };
+      }
+    </script>
   </body>
 </html>
