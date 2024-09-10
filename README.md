@@ -14,7 +14,8 @@ We use the [Clay foundation model](https://clay-foundation.github.io/model/index
 for embeddings and we source the images from the European Space Agency's
 [Sentinel satellites](https://www.esa.int/Applications/Observing_the_Earth/Copernicus/The_Sentinel_missions).
 
-You can take the application for a spin [here](https://modal-labs--clay-hybrid-search.modal.run/).
+You can take our deployment of the application for a spin
+[here](https://modal-labs--clay-hybrid-search.modal.run/).
 
 ## Overview
 
@@ -38,7 +39,7 @@ The dataflow looks something like this:
 3. Asynchronously, we run a job on Modal to check which entries
    in the database don't have an associated embedding.
    These images are then sent to a serverless embedding service
-   running on Modal and send the resulting embeddings to the database.
+   running on Modal. We send the resulting embeddings to the database.
 4. We host a database client on Modal that allows the application's
    developers to manipulate the data. This client is also used by two
    web endpoints for vector and geospatial search queries powered by
@@ -76,7 +77,7 @@ Make sure it's accessible from [all IP addresses](https://stackoverflow.com/ques
 In the process, you will create a database user with a password.
 Navigate to the Modal Secrets dashboard [here](https://modal.com/secrets/)
 and add this information, as well as the connection string for your database,
-to a Modal Secret based on the MongoDB template.
+to a Modal Secret based on the MongoDB template available in the dashboard.
 
 ### MongoDB Client (`database.py`)
 
@@ -90,29 +91,29 @@ modal run backend.database::MongoClient.ping
 Once that command is working, you can start manipulating the database
 from Modal.
 
-To start, you'll want to add an Area of Interest (AOI) to the database.
+To start, you'll want to add an Area of Interest (AOI) to the database:
 
 ```bash
 modal run backend.database --action add_aoi
 ```
 
 By default, it's the state of California as defined by the GeoJSON
-in the `gata` folder (originally retrieved from
-[this GitHub repository](https://github.com/ropensci/geojsonio/blob/7e4cc683ed3d6eec38a8cae5ce03fa6d82acafc7/inst/examples/california.geojson)).
+in this repository's `data` folder (originally retrieved from
+[the `geojsonio` GitHub repository](https://github.com/ropensci/geojsonio/blob/7e4cc683ed3d6eec38a8cae5ce03fa6d82acafc7/inst/examples/california.geojson)).
 You can pass a different GeoJSON file to the `add_aoi` action
 with the `--target` flag.
 
 The `modal run` command is used for one-off tasks.
 To deploy the database client for use in other parts of the app
 along with the webhooks that anyone can use to run search queries,
-we use `modal deploy`.
+we use `modal deploy`:
 
 ```bash
 modal deploy backend.database
 ```
 
 Those webhooks come with interactive OpenAPI docs,
-which you can access by navigating to `/docs` route of the deployment's URL.
+which you can access by navigating to the `/docs` route of the deployment's URL.
 You should see that URL in the terminal output.
 You can also find the URL in the app's [Modal dashboard](https://modal.com/apps).
 
@@ -120,27 +121,27 @@ For our deployment, the URL for the interactive docs for the geographic
 search endpoint is
 [`https://modal-labs--clay-mongo-client-geo-search.modal.run/docs`](https://modal-labs--clay-mongo-client-geo-search.modal.run/docs).
 
-If you haven't yet run the backfill jobs, as described below,
-this search will not return any results,
+If you haven't yet run the backfill jobs for your database instance,
+as described below, this search will not return any results,
 but you can use it to check that the database client is deployed.
 
 ### Backfill and Updates (`extract.py`)
 
-We add data to the database by querying the STAC API for images.
+We add data to the database by querying the Sentinel STAC API for images.
 
 Run the following command to search for images in the AOI
-from the preceding week and ingest them:
+from the preceding week and add them to the database:
 
 ```bash
 modal run backend.extract
 ```
 
 You can either check the results via the Atlas UI
-or by executing a search query via the database client's geo search webhook,
+or by executing a search query in the database client's geo search webhook,
 as described above.
 
 To regularly update the database with new images,
-we deploy the app defined in `extract.py`.
+we deploy the app defined in `extract.py`:
 
 ```bash
 modal deploy backend.extract
@@ -149,7 +150,7 @@ modal deploy backend.extract
 This app also runs a regular job to add embeddings to the images
 in the database.
 
-But it doesn't execute the embeddings itself --
+But it doesn't compute the embeddings itself --
 embeddings are provided by a separate service,
 which is described next.
 
@@ -157,13 +158,13 @@ which is described next.
 
 To build the environment for the embeddings service
 and to test the embedding engine on some sample data,
-execute the command
+execute the following command:
 
 ```bash
 modal run backend.embeddings
 ```
 
-To deploy this on Modal, we again use `modal deploy`.
+To deploy this on Modal, we again use `modal deploy`:
 
 ```bash
 modal deploy backend.embeddings
@@ -179,12 +180,14 @@ function in `extract` with `modal run`:
 modal run backend.extract::enrich_vectors
 ```
 
-This command will add embeddings to all the images in the database.
+This command will ensure all the images in the database have embeddings.
 
 You should be able to observe them on records viewed via the Atlas UI
-or by executing a search query via the database client's geo search webhook.
+or by executing a search query via the database client's geo search webhook,
+as described previously.
 
-To use the embeddings for search, we recommend running the frontend UI.
+To use the embeddings for search, we recommend running the frontend UI,
+which we walk through next.
 
 ## Deploying the Frontend
 
