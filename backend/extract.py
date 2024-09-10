@@ -1,3 +1,7 @@
+"""Extracts data from the STAC API to store in the database and enriches database contents with embeddings.
+
+Runs regularly if deployed and can be triggered manually with `modal run`.
+"""
 from datetime import timedelta
 from datetime import date
 from typing import Any, Optional
@@ -112,7 +116,7 @@ def main(aoi: str = None, start: str = None, end: str = None):
 
     If not provided, the area of interest is {TARGET_AOI}.
 
-    If no end date is provided, the end date is set to the current date and the start date is set to the previous day.
+    If no end date is provided, the end date is set to the current date and the start date is set to one week before.
 
     If an end date is provided, a start date must also be provided.
     """
@@ -121,7 +125,7 @@ def main(aoi: str = None, start: str = None, end: str = None):
 
     if end is None:
         end = date.today()
-        start = end - timedelta(days=1)
+        start = end - timedelta(days=7)
     else:
         assert (
             start is not None
@@ -133,7 +137,10 @@ def main(aoi: str = None, start: str = None, end: str = None):
     MongoClient = modal.Cls.lookup(CLIENT_APP, "MongoClient")
     client = MongoClient()
 
-    aoi = next(client.get_aois.remote_gen(query={"_id": aoi}))
+    try:
+        aoi = next(client.get_aois.remote_gen(query={"_id": aoi}))
+    except StopIteration as e:
+        raise ValueError(f"Area-of-interest with id {aoi} not found") from e
     print(f"🌐 looking inside area-of-interest with id {aoi['_id']}")
 
     ct, bct, bsz = 0, 0, 100

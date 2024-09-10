@@ -1,3 +1,6 @@
+"""Internal database client and external web endpoints.
+
+Use `modal run` to execute a few common tasks."""
 import json
 from datetime import date
 from typing import Any, Optional
@@ -8,7 +11,7 @@ from pydantic import BaseModel
 from .common import CLIENT_APP
 
 mongo_client_image = modal.Image.debian_slim(python_version="3.12").pip_install(
-    "pymongo[srv]"
+    "pymongo[srv]==4.8.0"
 )
 
 app = modal.App(
@@ -50,6 +53,11 @@ class MongoClient:
     @modal.exit()
     def disconnect(self):
         self.client.close()
+
+    @modal.method()
+    def ping(self):
+        self.client.admin.command("ping")
+        print("🍃 successful ping")
 
     @modal.method()
     def insert_many(

@@ -1,3 +1,4 @@
+"""Defines an embedding service for Sentinel satellite data based on the Clay foundation model."""
 import json
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,7 @@ BANDS = ["blue", "green", "red", "nir"]
 BATCH_SIZES = {"h100": 768, "a100-80gb": 768, "a100": 384, "a10g": 192}
 GPU = "a10g"
 BATCH_SIZE = BATCH_SIZES[GPU]
+STAC_API = "https://earth-search.aws.element84.com/v1"
 
 
 def download_model(clay_version=DEFAULT_CLAY_VERSION, clay_ckpt=DEFAULT_CLAY_CKPT):
@@ -30,16 +32,8 @@ def download_model(clay_version=DEFAULT_CLAY_VERSION, clay_ckpt=DEFAULT_CLAY_CKP
     )
 
 
-image = common.image.run_function(download_model).copy_local_file(
-    Path(__file__).parent.parent / "data" / "stac.json",
-    remote_path="/root/data/stac.json",
-)
-
-
+image = common.image.run_function(download_model)
 app = modal.App(common.EMBED_APP, image=image)
-
-
-STAC_API = "https://earth-search.aws.element84.com/v1"
 
 
 def prep_stac(input_stac: dict[str, Any]):
@@ -212,9 +206,9 @@ def reshape_to_tiles(array, tile_size):
     return reshaped_array
 
 
-# TODO: test run on mock data?
 @app.local_entrypoint()
 def main():
+    """Runs the embedding engine on a sample input."""
     embedding_engine = ClayEmbeddings()
 
     input_stac = json.loads(
