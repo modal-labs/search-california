@@ -202,8 +202,18 @@ def geo_search(
                 "vector": 1,
                 "url": "$link.href",
                 "distance": 1,
-                "lon": {"$arrayElemAt": ["$bbox", 0]},
-                "lat": {"$arrayElemAt": ["$bbox", 1]},
+                "lon": {
+                    "$avg": [
+                        {"$arrayElemAt": ["$bbox", 0]},
+                        {"$arrayElemAt": ["$bbox", 2]},
+                    ]
+                },
+                "lat": {
+                    "$avg": [
+                        {"$arrayElemAt": ["$bbox", 1]},
+                        {"$arrayElemAt": ["$bbox", 3]},
+                    ]
+                },
             }
         },
     ]
@@ -270,8 +280,18 @@ def vector_search(
                 "vector": 1,
                 "url": "$link.href",
                 "score": 1,
-                "lon": {"$arrayElemAt": ["$bbox", 0]},
-                "lat": {"$arrayElemAt": ["$bbox", 1]},
+                "lon": {
+                    "$avg": [
+                        {"$arrayElemAt": ["$bbox", 0]},
+                        {"$arrayElemAt": ["$bbox", 2]},
+                    ]
+                },
+                "lat": {
+                    "$avg": [
+                        {"$arrayElemAt": ["$bbox", 1]},
+                        {"$arrayElemAt": ["$bbox", 3]},
+                    ]
+                },
             }
         },
     ]
