@@ -1,4 +1,4 @@
-# Searching California with Modal, MongoDB, and Clay
+# Using MongoDB Atlas Vector and GeoJSON Search with Modal
 
 This example demonstrates how to use Modal and MongoDB together
 to build a full-stack application.
