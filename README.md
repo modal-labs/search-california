@@ -1,6 +1,7 @@
 # Using MongoDB Atlas Vector and GeoJSON Search with Modal
 
-This example demonstrates how to use Modal and MongoDB together
+This [example repo](https://github.com/modal-labs/search-california)
+demonstrates how to use Modal and MongoDB together
 to build a full-stack application.
 
 The application is a hybrid search engine,
