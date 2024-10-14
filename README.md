@@ -76,7 +76,7 @@ The free tier is more than sufficient to run this example.
 You'll want to create a database called `modal-examples`.
 Make sure it's accessible from [all IP addresses](https://stackoverflow.com/questions/66035947/allow-access-from-anywhere-mongodb-atlas).
 In the process, you will create a database user with a password.
-Navigate to the Modal Secrets dashboard [here](https://modal.com/secrets/)
+Navigate to the Modal Secrets dashboard [here](https://modal.com/secrets)
 and add this information, as well as the connection string for your database,
 to a Modal Secret based on the MongoDB template available in the dashboard.
 
