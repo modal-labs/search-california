@@ -16,7 +16,7 @@ for embeddings and we source the images from the European Space Agency's
 [Sentinel satellites](https://www.esa.int/Applications/Observing_the_Earth/Copernicus/The_Sentinel_missions).
 
 You can take our deployment of the application for a spin
-[here](https://modal-labs--clay-hybrid-search.modal.run/).
+[here](https://modal-labs-examples--clay-hybrid-search.modal.run/).
 
 ## Overview
 
@@ -120,7 +120,7 @@ You can also find the URL in the app's [Modal dashboard](https://modal.com/apps)
 
 For our deployment, the URL for the interactive docs for the geographic
 search endpoint is
-[`https://modal-labs--clay-mongo-client-geo-search.modal.run/docs`](https://modal-labs--clay-mongo-client-geo-search.modal.run/docs).
+[`https://modal-labs-examples--clay-mongo-client-geo-search.modal.run/docs`](https://modal-labs-examples--clay-mongo-client-geo-search.modal.run/docs).
 
 If you haven't yet run the backfill jobs for your database instance,
 as described below, this search will not return any results,
@@ -197,7 +197,7 @@ It comprises a small Alpine JS app and a FastAPI Python server
 to deliver it to client browsers.
 
 You can play with our deployment of the frontend
-[here](https://modal-labs--clay-hybrid-search.modal.run/).
+[here](https://modal-labs-examples--clay-hybrid-search.modal.run/).
 
 ### Alpine App (`app.js`)
 

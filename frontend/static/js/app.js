@@ -100,7 +100,7 @@ document.addEventListener("alpine:init", () => {
 
       try {
         const response = await fetch(
-          `https://modal-labs--clay-mongo-client-geo-search.modal.run?${queryParams.toString()}`,
+          `https://modal-labs-examples--clay-mongo-client-geo-search.modal.run?${queryParams.toString()}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -148,7 +148,7 @@ document.addEventListener("alpine:init", () => {
 
       try {
         const response = await fetch(
-          `https://modal-labs--clay-mongo-client-vector-search.modal.run?${queryParams.toString()}`,
+          `https://modal-labs-examples--clay-mongo-client-vector-search.modal.run?${queryParams.toString()}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

@@ -1,4 +1,5 @@
 """Defines an embedding service for Sentinel satellite data based on the Clay foundation model."""
+
 import json
 from pathlib import Path
 from typing import Any
@@ -9,8 +10,7 @@ from . import common
 from .common import COLLECTION
 
 
-DEFAULT_CLAY_VERSION = "v0.5.7"
-DEFAULT_CLAY_CKPT = "mae_v0.5.7_epoch-13_val-loss-0.3098.ckpt"
+DEFAULT_MODEL_SIZE = "base"
 
 BANDS = ["blue", "green", "red", "nir"]
 
@@ -20,12 +20,11 @@ BATCH_SIZE = BATCH_SIZES[GPU]
 STAC_API = "https://earth-search.aws.element84.com/v1"
 
 
-def download_model(clay_version=DEFAULT_CLAY_VERSION, clay_ckpt=DEFAULT_CLAY_CKPT):
-    from src.model import ClayMAEModule
+def download_model(model_size=DEFAULT_MODEL_SIZE):
+    from src.module import ClayMAEModule
 
-    model_url = f"https://clay-model-ckpt.s3.amazonaws.com/{clay_version}/{clay_ckpt}"
-    ClayMAEModule.load_from_checkpoint(
-        model_url,
+    ClayMAEModule(
+        model_size,
         metadata_path="/model/configs/metadata.yaml",
         shuffle=False,
         mask_ratio=0,
@@ -38,6 +37,7 @@ app = modal.App(common.EMBED_APP, image=image)
 
 def prep_stac(input_stac: dict[str, Any]):
     """Handles raw stac input and loads pixel array."""
+    import numpy as np
     import pystac
     import stackstac
     from rasterio.enums import Resampling
@@ -45,13 +45,20 @@ def prep_stac(input_stac: dict[str, Any]):
     if isinstance(input_stac, dict):
         input_stac = pystac.Item.from_dict(input_stac)
 
+    try:
+        epsg = int(input_stac.ext.proj.code.split(":")[-1])
+    except Exception:
+        print("WARNING: error reading EPSG from STAC, assuming it's from California")
+        epsg = 32611
+
     stack = stackstac.stack(
         [input_stac],
         assets=BANDS,
         dtype="float32",
         rescale=False,
-        fill_value=0,
+        fill_value=np.float32(0.0),
         resampling=Resampling.nearest,
+        epsg=epsg,
     )
 
     array = stack.compute().to_numpy()
@@ -65,12 +72,12 @@ class ClayEmbeddings:
     def load(self):
         import torch
 
-        from src.model import ClayMAEModule
+        from src.module import ClayMAEModule
 
         print("🌐 loading model")
         torch.set_default_device("cuda")
-        model = ClayMAEModule.load_from_checkpoint(
-            torch.hub.get_dir() + "/checkpoints/" + DEFAULT_CLAY_CKPT,
+        model = ClayMAEModule(
+            DEFAULT_MODEL_SIZE,
             metadata_path="/model/configs/metadata.yaml",
             shuffle=False,
             mask_ratio=0,

@@ -1,6 +1,7 @@
 """Internal database client and external web endpoints.
 
 Use `modal run` to execute a few common tasks."""
+
 import json
 from datetime import date
 from typing import Any, Optional
@@ -11,12 +12,12 @@ from pydantic import BaseModel
 from .common import CLIENT_APP
 
 mongo_client_image = modal.Image.debian_slim(python_version="3.12").pip_install(
-    "pymongo[srv]==4.8.0"
+    "pymongo[srv]==4.8.0", "fastapi[standard]==0.115.8"
 )
 
 app = modal.App(
     CLIENT_APP,
-    secrets=[modal.Secret.from_name("my-mongodb-secret")],
+    secrets=[modal.Secret.from_name("mongodb-secret")],
     image=mongo_client_image,
 )
 

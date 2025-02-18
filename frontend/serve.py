@@ -7,8 +7,10 @@ from fastapi.staticfiles import StaticFiles
 
 import modal
 
-image = modal.Image.debian_slim(python_version="3.12").copy_local_dir(
-    Path(__file__).parent / "static", remote_path="/root/static"
+image = (
+    modal.Image.debian_slim(python_version="3.12")
+    .pip_install("fastapi[standard]==0.115.8")
+    .copy_local_dir(Path(__file__).parent / "static", remote_path="/root/static")
 )
 
 

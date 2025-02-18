@@ -2,6 +2,7 @@
 
 Runs regularly if deployed and can be triggered manually with `modal run`.
 """
+
 from datetime import timedelta
 from datetime import date
 from typing import Any, Optional
